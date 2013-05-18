@@ -5,12 +5,12 @@ synonymous with the django.contrib.admin.sites model.
 
 """
 
-
 from django.core.urlresolvers import reverse
 from django.conf.urls import patterns, url
 from django.contrib.auth import models as auth_app
 from django.db.models import get_models, signals
 
+from djadmin2 import apiviews
 from djadmin2 import views
 
 try:
@@ -108,6 +108,9 @@ class ModelAdmin2(BaseAdmin2):
     detail_view = views.ModelDetailView
     delete_view = views.ModelDeleteView
 
+    # API Views
+    api_index_view = apiviews.ModelListCreateAPIView
+
     def __init__(self, model, **kwargs):
         self.model = model
         self.app_label = model._meta.app_label
@@ -184,10 +187,24 @@ class ModelAdmin2(BaseAdmin2):
             ),
         )
 
+    def get_api_urls(self):
+        return patterns('',
+            url(
+                regex=r'^$',
+                view=self.api_index_view.as_view(model=self.model),
+                name=self.get_prefixed_view_name('api-index'),
+            ),
+        )
+
     @property
     def urls(self):
         # We set the application and instance namespace here
-        return self.get_urls(), None, None
+        return self.get_urls(), self.name, self.name
+
+    @property
+    def api_urls(self):
+        # We set the application and instance namespace here
+        return self.get_api_urls(), self.name, self.name
 
 def create_extra_permissions(app, created_models, verbosity, **kwargs):
     """
