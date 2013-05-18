@@ -49,6 +49,8 @@ class Admin2(object):
             urlpatterns += patterns('',
                 url('^{}/{}/'.format(app_label, model_name),
                     include(modeladmin.urls)),
+                url('^api/{}/{}/'.format(app_label, model_name),
+                    include(modeladmin.api_urls)),
             )
         return urlpatterns
 
