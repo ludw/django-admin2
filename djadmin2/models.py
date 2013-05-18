@@ -6,6 +6,7 @@ synonymous with the django.contrib.admin.sites model.
 """
 from django.conf.urls import patterns, include, url
 
+from djadmin2 import apiviews
 from djadmin2 import views
 
 try:
@@ -88,6 +89,8 @@ class ModelAdmin2(BaseAdmin2):
     detail_view = views.ModelDetailView
     delete_view = views.ModelDeleteView
 
+    api_index_view = apiviews.ModelListCreateAPIView
+
     def __init__(self, model, **kwargs):
         self.model = model
 
@@ -154,7 +157,22 @@ class ModelAdmin2(BaseAdmin2):
             ),
         )
 
+    def get_api_urls(self):
+        return patterns('',
+            url(
+                regex=r'^$',
+                view=self.api_index_view.as_view(model=self.model),
+                name='api-index'
+            ),
+        )
+
     @property
     def urls(self):
         # We set the application and instance namespace here
         return self.get_urls(), None, None
+
+    @property
+    def api_urls(self):
+        # We set the application and instance namespace here
+        return self.get_api_urls(), None, None
+
