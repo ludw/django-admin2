@@ -1,10 +1,12 @@
-{% extends "admin/base.html" %}
+{% extends "admin2/bootstrap/base.html" %}
 
 {% block content %}
-    <a href="./add/">add</a>
+
+    <h2>{{ model_pluralized|title }}</h2>
+    <a class="btn" href="./create/">Add {{ model|title }}</a>
     <hr/>
 {% for obj in object_list %}
-    {{ obj }} <a href="./{{ obj.pk }}/">detail</a> <a href="./{{ obj.pk }}/edit/">edit</a> <a href="./{{ obj.pk }}/delete/">delete</a><br/>
+    {{ obj }} <a href="./{{ obj.pk }}/">detail</a> <a href="./{{ obj.pk }}/update/">edit</a> <a href="./{{ obj.pk }}/delete/">delete</a><br/>
 {% endfor %}
 
 
