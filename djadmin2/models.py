@@ -5,12 +5,12 @@ synonymous with the django.contrib.admin.sites model.
 
 """
 
-
 from django.core.urlresolvers import reverse
 from django.conf.urls import patterns, url
 from django.contrib.auth import models as auth_app
 from django.db.models import get_models, signals
 
+from djadmin2 import apiviews
 from djadmin2 import views
 
 try:
@@ -108,6 +108,10 @@ class ModelAdmin2(BaseAdmin2):
     detail_view = views.ModelDetailView
     delete_view = views.ModelDeleteView
 
+    # API Views
+    api_index_view = apiviews.ListCreateAPIView
+    api_detail_view = apiviews.RetrieveUpdateDestroyAPIView
+
     def __init__(self, model, **kwargs):
         self.model = model
         self.app_label = model._meta.app_label
@@ -155,6 +159,12 @@ class ModelAdmin2(BaseAdmin2):
     def get_index_url(self):
         return reverse('admin2:{}'.format(self.get_prefixed_view_name('index')))
 
+    def get_api_index_kwargs(self):
+        return self.get_default_view_kwargs()
+
+    def get_api_detail_kwargs(self):
+        return self.get_default_view_kwargs()
+
     def get_urls(self):
         return patterns('',
             url(
@@ -184,10 +194,29 @@ class ModelAdmin2(BaseAdmin2):
             ),
         )
 
+    def get_api_urls(self):
+        return patterns('',
+            url(
+                regex=r'^$',
+                view=self.api_index_view.as_view(**self.get_api_index_kwargs()),
+                name=self.get_prefixed_view_name('api-index'),
+            ),
+            url(
+                regex=r'^(?P<pk>[0-9]+)/$',
+                view=self.api_detail_view.as_view(**self.get_api_detail_kwargs()),
+                name=self.get_prefixed_view_name('api-detail'),
+            ),
+        )
+
     @property
     def urls(self):
         # We set the application and instance namespace here
-        return self.get_urls(), None, None
+        return self.get_urls(), self.name, self.name
+
+    @property
+    def api_urls(self):
+        # We set the application and instance namespace here
+        return self.get_api_urls(), self.name, self.name
 
 def create_extra_permissions(app, created_models, verbosity, **kwargs):
     """
